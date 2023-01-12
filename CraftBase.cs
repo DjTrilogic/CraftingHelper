@@ -82,8 +82,84 @@ public abstract class CraftBase
         return Steps[nextStep.Value];
     }
 
-    protected abstract bool CheckOutcome(Filter[] filters);
+    private bool CheckOutcome(Filter[] filters)
+    {
+        var passed = true;
+        var passedGroups = 0;
+        foreach (var filter in filters)
+        {
+            var passedConditions = 0;
+            foreach (var condition in filter.Conds)
+            {
+                var mod = condition.Id;
+                if (ItemHasMod(mod))
+                {
+                    passedConditions++;
+                }
+                else
+                {
+                    switch (mod)
+                    {
+                        case "open_prefix":
+                            if (GetItemOpenPrefixes() >= condition.Treshold)
+                            {
+                                passedConditions++;
+                            }
+                            break;
+                        case "open_suffix":
+                            if (GetItemOpenSuffixes() >= condition.Treshold)
+                            {
+                                passedConditions++;
+                            }
+                            break;
+                        // TODO: complete
+                        default:
+                            break;
+                    }
+                }
+            }
 
+
+            var requiredCondsCount = filter.Treshold.HasValue ? filter.Treshold.Value : filter.Conds.Length;
+            switch (filter.Type)
+            {
+                case "or":
+                    if (passedConditions >= requiredCondsCount)
+                    {
+                        passedGroups++;
+                    }
+                    break;
+                case "and":
+                    var needed = filter.Treshold.HasValue ? filter.Treshold.Value : filter.Conds.Length;
+                    if (passedConditions >= requiredCondsCount)
+                    {
+                        passedGroups++;
+                    }
+                    else
+                    {
+                        passed = false;
+                    }
+                    break;
+                default:
+                    if (passedConditions > 0)
+                    {
+                        passed = false;
+                    }
+                    break;
+            }
+        }
+
+        if (passedGroups == 0)
+        {
+            passed = false;
+        }
+
+        return passed;
+    }
+
+    protected abstract long GetItemOpenSuffixes();
+    protected abstract long GetItemOpenPrefixes();
+    protected abstract bool ItemHasMod(string mod);
 
     private void ApplyMethod(string[] method)
     {

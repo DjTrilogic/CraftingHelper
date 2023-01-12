@@ -15,10 +15,18 @@ public class FakeCraft : CraftBase
         // move mouse and click..
     }
 
-    protected override bool CheckOutcome(Filter[] filters)
+    protected override long GetItemOpenPrefixes()
     {
-        // faking every currency sucess with a 10% chance
-        return random.Next(0, 10) == 3;
+        return random.Next(0, 2);
     }
 
+    protected override long GetItemOpenSuffixes()
+    {
+        return random.Next(0, 2);
+    }
+
+    protected override bool ItemHasMod(string mod)
+    {
+        return random.Next(0, 10) == 3;
+    }
 }
