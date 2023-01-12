@@ -30,12 +30,30 @@ public abstract class CraftBase
 
     public void Execute()
     {
+        OnCraftStart();
+
+        if (!CheckInitialItem())
+        {
+            Console.WriteLine($"Wrong initial item: STOPPING...");
+        }
+
         while (currentStep != null)
         {
+            OnCraftStepStart();
             currentStep = ExecuteStep(currentStep);
         }
 
         Console.WriteLine($"Crafting finished\n{string.Join("\n", usedCurrency.Select(c => $"{c.Key}: {c.Value}"))}");
+    }
+
+    protected virtual void OnCraftStepStart()
+    {
+
+    }
+
+    protected virtual void OnCraftStart()
+    {
+
     }
 
     private Step? ExecuteStep(Step step)
@@ -157,9 +175,6 @@ public abstract class CraftBase
         return passed;
     }
 
-    protected abstract long GetItemOpenSuffixes();
-    protected abstract long GetItemOpenPrefixes();
-    protected abstract bool ItemHasMod(string mod);
 
     private void ApplyMethod(string[] method)
     {
@@ -181,6 +196,10 @@ public abstract class CraftBase
         }
     }
 
+    protected abstract bool CheckInitialItem();
+    protected abstract long GetItemOpenSuffixes();
+    protected abstract long GetItemOpenPrefixes();
+    protected abstract bool ItemHasMod(string mod);
     protected abstract void ApplyCurrency(string currency);
 
     private class Step : ConfigElement

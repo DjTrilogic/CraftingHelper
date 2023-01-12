@@ -15,6 +15,12 @@ public class FakeCraft : CraftBase
         // move mouse and click..
     }
 
+    protected override bool CheckInitialItem()
+    {
+        // 10% for the initial item to be wrong
+        return random.Next(0, 10) == 3;
+    }
+
     protected override long GetItemOpenPrefixes()
     {
         return random.Next(0, 2);
@@ -27,6 +33,7 @@ public class FakeCraft : CraftBase
 
     protected override bool ItemHasMod(string mod)
     {
+        // 10% for item to have the mod
         return random.Next(0, 10) == 3;
     }
 }
