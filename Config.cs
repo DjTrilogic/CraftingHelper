@@ -242,7 +242,7 @@ namespace CraftingHelper.Config
         public long Base { get; set; }
 
         [JsonPropertyName("bitem")]
-        public long Bitem { get; set; }
+        public long? Bitem { get; set; }
 
         [JsonPropertyName("ilvl")]
         public long Ilvl { get; set; }

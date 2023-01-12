@@ -10,4 +10,7 @@ Console.WriteLine($"Parsed {modifiers.Length} modifiers.");
 Console.WriteLine($"Parsed configuration with {config.ConfigConfig.Count()} steps.");
 
 var craft = new FakeCraft(config);
-craft.Execute();
+var enumerator = craft.Execute();
+while(enumerator.MoveNext())
+{
+};

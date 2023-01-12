@@ -1,6 +1,8 @@
 // See https://aka.ms/new-console-template for more information
 
 using CraftingHelper.Config;
+using System.Collections;
+
 
 public class FakeCraft : CraftBase
 {
@@ -15,10 +17,9 @@ public class FakeCraft : CraftBase
         // move mouse and click..
     }
 
-    protected override bool CheckInitialItem()
+    protected override bool CanDoCraft()
     {
-        // 10% for the initial item to be wrong
-        return random.Next(0, 10) == 3;
+        return true;
     }
 
     protected override long GetItemOpenPrefixes()
@@ -35,5 +36,10 @@ public class FakeCraft : CraftBase
     {
         // 10% for item to have the mod
         return random.Next(0, 10) == 3;
+    }
+
+    protected override IEnumerator AfterEachStep()
+    {
+        return null;
     }
 }

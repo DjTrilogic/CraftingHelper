@@ -1,9 +1,11 @@
 // See https://aka.ms/new-console-template for more information
 
 using CraftingHelper.Config;
+using System.Collections;
 
 public abstract class CraftBase
 {
+    private bool shouldStop;
     private Step? currentStep;
     private Dictionary<string, int> usedCurrency = new Dictionary<string, int>();
     private Dictionary<long, Step> Steps { get; }
@@ -27,28 +29,42 @@ public abstract class CraftBase
     }
 
     public Config Config { get; }
+    public Dictionary<string, int> UsedCurrency { get => usedCurrency; }
 
-    public void Execute()
+    public virtual void Stop()
+    {
+        shouldStop = true;
+    }
+
+    public IEnumerator Execute()
     {
         OnCraftStart();
 
-        if (!CheckInitialItem())
+        if (!CanDoCraft())
         {
             Console.WriteLine($"Wrong initial item: STOPPING...");
+            yield break;
         }
 
-        while (currentStep != null)
+        while (currentStep != null && !shouldStop)
         {
-            OnCraftStepStart();
+            if (!CanDoStep())
+            {
+                yield break;
+            }
+
             currentStep = ExecuteStep(currentStep);
+            yield return AfterEachStep();
+
         }
 
-        Console.WriteLine($"Crafting finished\n{string.Join("\n", usedCurrency.Select(c => $"{c.Key}: {c.Value}"))}");
+        Console.WriteLine($"Crafting finished\n{string.Join("\n", UsedCurrency.Select(c => $"{c.Key}: {c.Value}"))}");
+        yield break;
     }
 
-    protected virtual void OnCraftStepStart()
+    protected virtual bool CanDoStep()
     {
-
+        return true;
     }
 
     protected virtual void OnCraftStart()
@@ -56,9 +72,15 @@ public abstract class CraftBase
 
     }
 
+    protected virtual void ReparseItem()
+    {
+
+    }
+
     private Step? ExecuteStep(Step step)
     {
         ApplyMethod(step.Method);
+        ReparseItem();
         if (step.Autopass || CheckOutcome(step.Filters))
         {
             Console.WriteLine($"Step succeeeded");
@@ -73,7 +95,7 @@ public abstract class CraftBase
 
     private Step? NextAction(string action, long? route)
     {
-        long? nextStep = new Nullable<long>();
+        long? nextStep;
         switch (action)
         {
             case "step":
@@ -184,11 +206,11 @@ public abstract class CraftBase
                 var currency = method[1];
                 Console.WriteLine($"Applying currency: {currency}...");
                 ApplyCurrency(currency);
-                if (!usedCurrency.ContainsKey(currency))
+                if (!UsedCurrency.ContainsKey(currency))
                 {
-                    usedCurrency.Add(currency, 0);
+                    UsedCurrency.Add(currency, 0);
                 }
-                usedCurrency[currency]++;
+                UsedCurrency[currency]++;
                 break;
             case "check":
                 Console.WriteLine($"Checking item...");
@@ -196,7 +218,9 @@ public abstract class CraftBase
         }
     }
 
-    protected abstract bool CheckInitialItem();
+
+    protected abstract bool CanDoCraft();
+    protected abstract IEnumerator AfterEachStep();
     protected abstract long GetItemOpenSuffixes();
     protected abstract long GetItemOpenPrefixes();
     protected abstract bool ItemHasMod(string mod);
